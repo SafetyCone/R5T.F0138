@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 
 using R5T.T0132;
+using R5T.T0172;
 using R5T.T0214;
 using R5T.T0214.Extensions;
 using R5T.T0214.N001.Extensions;
+using R5T.T0215;
 using R5T.T0217;
 using R5T.T0218;
 
@@ -19,6 +21,21 @@ namespace R5T.F0138
     [FunctionalityMarker]
     public partial interface IDotnetPackPathOperator : IFunctionalityMarker
     {
+        public IDocumentationXmlFilePath[] GetDocumentationXmlFilePaths(
+            IDotnetPackName dotnetPackName,
+            ITargetFrameworkMoniker targetFrameworkMoniker)
+        {
+            var dotnetPackDirectoryPath = this.Get_DotnetPackDirectoryPath(
+                dotnetPackName,
+                targetFrameworkMoniker);
+
+            // Safe to assume that all XML files in the directory will be documentation files.
+            var documentationFilePaths = Instances.DocumentationXmlFilePathOperator.Get_DocumentationXmlFilePaths_AssumeAllXmls(
+                dotnetPackDirectoryPath);
+
+            return documentationFilePaths;
+        }
+
         public IDotnetPackDirectoryPath Get_DotnetPackDirectoryPath(
             T0214.N001.IDotnetPacksDirectoryPath dotnetPacksDirectoryPath,
             T0214.N001.IDotnetPackDirectoryName dotnetPackDirectoryName,
@@ -74,7 +91,7 @@ namespace R5T.F0138
             return this.Get_DotnetPackDirectoryPath(
                 dotnetPackName,
                 majorMinorPatchVersionedDirectoryName,
-                targetFrameworkMoniker);
+                targetFrameworkDirectoryName);
         }
 
         public IDotnetPackDirectoryPath Get_DotnetPackDirectoryPath(
@@ -87,6 +104,19 @@ namespace R5T.F0138
             return this.Get_DotnetPackDirectoryPath(
                 dotnetPackName,
                 versionedDirectoryName,
+                targetFrameworkMoniker);
+        }
+
+        public IDotnetPackDirectoryPath Get_DotnetPackDirectoryPath(
+            T0215.IDotnetPackName dotnetPackName,
+            Version version,
+            ITargetFrameworkMoniker targetFrameworkMoniker)
+        {
+            var versionName = Instances.VersionOperator.ToVersionName(version);
+
+            return this.Get_DotnetPackDirectoryPath(
+                dotnetPackName,
+                versionName,
                 targetFrameworkMoniker);
         }
 
@@ -138,6 +168,36 @@ namespace R5T.F0138
 
             var output = Instances.VersionedDirectoryPathOperator.Get_VersionedDirectoryPathsByVersion(versionedDirectoryPaths);
             return output;
+        }
+
+        /// <summary>
+        /// Given a dotnet pack name and a target framework moniker, get the dotnet pack directory path.
+        /// This requires querying the file system for the versions available for a dotnet pack.
+        /// </summary>
+        public IDotnetPackDirectoryPath Get_DotnetPackDirectoryPath(
+            IDotnetPackName dotnetPackName,
+            ITargetFrameworkMoniker targetFrameworkMoniker)
+        {
+            var versionedDirectoryPathsByVersion = this.Get_VersionedPackDirectoryPathsByVersion(
+                dotnetPackName);
+
+            var dotnetMajorVersion = Instances.TargetFrameworkMonikerOperator.Get_DotnetMajorVersion(targetFrameworkMoniker);
+
+            var highestSubVersion = Instances.VersionOperator.Choose_HighestSubVersionOf(
+                versionedDirectoryPathsByVersion.Keys,
+                dotnetMajorVersion);
+
+            if(highestSubVersion is null)
+            {
+                throw new Exception($"No subversions found for dotnet pack '{dotnetPackName}', major version {dotnetMajorVersion}.");
+            }
+
+            var dotnetPackDirectoryPath = this.Get_DotnetPackDirectoryPath(
+                dotnetPackName,
+                highestSubVersion,
+                targetFrameworkMoniker);
+
+            return dotnetPackDirectoryPath;
         }
     }
 }
