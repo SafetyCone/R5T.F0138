@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using R5T.T0132;
+using R5T.T0159;
 using R5T.T0172;
 using R5T.T0214;
 using R5T.T0214.Extensions;
@@ -21,19 +22,43 @@ namespace R5T.F0138
     [FunctionalityMarker]
     public partial interface IDotnetPackPathOperator : IFunctionalityMarker
     {
-        public IDocumentationXmlFilePath[] GetDocumentationXmlFilePaths(
+        public IDocumentationXmlFilePath[] Get_DocumentationXmlFilePaths(
             IDotnetPackName dotnetPackName,
-            ITargetFrameworkMoniker targetFrameworkMoniker)
+            ITargetFrameworkMoniker targetFrameworkMoniker,
+            ITextOutput textOutput)
         {
-            var dotnetPackDirectoryPath = this.Get_DotnetPackDirectoryPath(
+            textOutput.WriteInformation("{0} ({1}): Getting documentation XML file paths...",
                 dotnetPackName,
                 targetFrameworkMoniker);
 
+            var dotnetPackDirectoryPath = this.Get_DotnetPackDirectoryPath(
+                dotnetPackName,
+                targetFrameworkMoniker,
+                textOutput);
+
             // Safe to assume that all XML files in the directory will be documentation files.
             var documentationFilePaths = Instances.DocumentationXmlFilePathOperator.Get_DocumentationXmlFilePaths_AssumeAllXmls(
-                dotnetPackDirectoryPath);
+                dotnetPackDirectoryPath,
+                textOutput);
+
+            textOutput.WriteInformation("{0} ({1}): Got documentation XML file paths, count: {2}.",
+                dotnetPackName,
+                targetFrameworkMoniker,
+                documentationFilePaths.Length);
 
             return documentationFilePaths;
+        }
+
+        public IDocumentationXmlFilePath[] Get_DocumentationXmlFilePaths(
+            IDotnetPackName dotnetPackName,
+            ITargetFrameworkMoniker targetFrameworkMoniker)
+        {
+            var textOutput = Instances.TextOutputOperator.Get_New_Null();
+
+            return this.Get_DocumentationXmlFilePaths(
+                dotnetPackName,
+                targetFrameworkMoniker,
+                textOutput);
         }
 
         public IDotnetPackDirectoryPath Get_DotnetPackDirectoryPath(
@@ -133,15 +158,30 @@ namespace R5T.F0138
         }
 
         public T0214.N001.IDotnetPackRootDirectoryPath Get_DotnetPackRootDirectoryPath(
-            T0215.IDotnetPackName dotnetPackName)
+            IDotnetPackName dotnetPackName,
+            ITextOutput textOutput)
         {
+            textOutput.WriteInformation("{0}: Getting dotnet pack root directory path for dotnet pack...", dotnetPackName);
+
             var dotnetPackDirectoryName = Instances.DotnetPackDirectoryNameOperator.Get_DotnetPackDirectoryName(dotnetPackName);
 
             var output = this.Get_DotnetPackRootDirectoryPath(
                 Instances.DotnetPacksDirectoryPaths.Windows,
                 dotnetPackDirectoryName);
 
+            textOutput.WriteInformation("{0}: dotnet pack root directory path:\n\t{1}", dotnetPackName, output);
+
             return output;
+        }
+
+        public T0214.N001.IDotnetPackRootDirectoryPath Get_DotnetPackRootDirectoryPath(
+            IDotnetPackName dotnetPackName)
+        {
+            var textOutput = Instances.TextOutputOperator.Get_New_Null();
+
+            return this.Get_DotnetPackRootDirectoryPath(
+                dotnetPackName,
+                textOutput);
         }
 
         public T0214.N001.IVersionedDotnetPackDirectoryPath[] Get_VersionedDotnetPackDirectoryPaths(T0214.N001.IDotnetPackRootDirectoryPath dotnetPackRootDirectoryPath)
@@ -154,20 +194,53 @@ namespace R5T.F0138
             return output;
         }
 
-        public T0214.N001.IVersionedDotnetPackDirectoryPath[] Get_VersionedDotnetPackDirectoryPaths(T0215.IDotnetPackName dotnetPackName)
+        public T0214.N001.IVersionedDotnetPackDirectoryPath[] Get_VersionedDotnetPackDirectoryPaths(
+            IDotnetPackName dotnetPackName,
+            ITextOutput textOutput)
         {
-            var dotnetPackRootDirectoryPath = this.Get_DotnetPackRootDirectoryPath(dotnetPackName);
+            textOutput.WriteInformation("{0}: Getting versioned dotnet pack directory paths for dotnet pack...", dotnetPackName);
+
+            var dotnetPackRootDirectoryPath = this.Get_DotnetPackRootDirectoryPath(
+                dotnetPackName,
+                textOutput);
 
             var output = this.Get_VersionedDotnetPackDirectoryPaths(dotnetPackRootDirectoryPath);
+
+            textOutput.WriteInformation("{0} (Count: {1}): Got versioned dotnet pack directory paths.", dotnetPackName, output.Length);
+
             return output;
         }
 
-        public IDictionary<Version, T0214.N001.IVersionedDotnetPackDirectoryPath> Get_VersionedPackDirectoryPathsByVersion(T0215.IDotnetPackName dotnetPackName)
+        public T0214.N001.IVersionedDotnetPackDirectoryPath[] Get_VersionedDotnetPackDirectoryPaths(
+            IDotnetPackName dotnetPackName)
         {
-            var versionedDirectoryPaths = this.Get_VersionedDotnetPackDirectoryPaths(dotnetPackName);
+            var textOutput = Instances.TextOutputOperator.Get_New_Null();
+
+            return this.Get_VersionedDotnetPackDirectoryPaths(
+                dotnetPackName,
+                textOutput);
+        }
+
+        public IDictionary<Version, T0214.N001.IVersionedDotnetPackDirectoryPath> Get_VersionedPackDirectoryPathsByVersion(
+            IDotnetPackName dotnetPackName,
+            ITextOutput textOutput)
+        {
+            var versionedDirectoryPaths = this.Get_VersionedDotnetPackDirectoryPaths(
+                dotnetPackName,
+                textOutput);
 
             var output = Instances.VersionedDirectoryPathOperator.Get_VersionedDirectoryPathsByVersion(versionedDirectoryPaths);
             return output;
+        }
+
+        public IDictionary<Version, T0214.N001.IVersionedDotnetPackDirectoryPath> Get_VersionedPackDirectoryPathsByVersion(
+            IDotnetPackName dotnetPackName)
+        {
+            var textOutput = Instances.TextOutputOperator.Get_New_Null();
+
+            return this.Get_VersionedPackDirectoryPathsByVersion(
+                dotnetPackName,
+                textOutput);
         }
 
         /// <summary>
@@ -176,10 +249,16 @@ namespace R5T.F0138
         /// </summary>
         public IDotnetPackDirectoryPath Get_DotnetPackDirectoryPath(
             IDotnetPackName dotnetPackName,
-            ITargetFrameworkMoniker targetFrameworkMoniker)
+            ITargetFrameworkMoniker targetFrameworkMoniker,
+            ITextOutput textOutput)
         {
+            textOutput.WriteInformation("{0} ({1}): Getting dotnet pack directory path...",
+                dotnetPackName,
+                targetFrameworkMoniker);
+
             var versionedDirectoryPathsByVersion = this.Get_VersionedPackDirectoryPathsByVersion(
-                dotnetPackName);
+                dotnetPackName,
+                textOutput);
 
             var dotnetMajorVersion = Instances.TargetFrameworkMonikerOperator.Get_DotnetMajorVersion(targetFrameworkMoniker);
 
@@ -197,7 +276,24 @@ namespace R5T.F0138
                 highestSubVersion,
                 targetFrameworkMoniker);
 
+            textOutput.WriteInformation("{0} ({1}): Dotnet pack directory path:\n\t{2}'",
+                dotnetPackName,
+                targetFrameworkMoniker,
+                dotnetPackDirectoryPath);
+
             return dotnetPackDirectoryPath;
+        }
+
+        public IDotnetPackDirectoryPath Get_DotnetPackDirectoryPath(
+            IDotnetPackName dotnetPackName,
+            ITargetFrameworkMoniker targetFrameworkMoniker)
+        {
+            var textOutput = Instances.TextOutputOperator.Get_New_Null();
+
+            return this.Get_DotnetPackDirectoryPath(
+                dotnetPackName,
+                targetFrameworkMoniker,
+                textOutput);
         }
     }
 }
