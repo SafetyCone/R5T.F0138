@@ -22,6 +22,7 @@ namespace R5T.F0138
     [FunctionalityMarker]
     public partial interface IDotnetPackPathOperator : IFunctionalityMarker
     {
+        /// <inheritdoc cref="Get_DocumentationXmlFilePaths(IDotnetPackDirectoryPath, ITextOutput)"/>
         public IDocumentationXmlFilePath[] Get_DocumentationXmlFilePaths(
             IDotnetPackName dotnetPackName,
             ITargetFrameworkMoniker targetFrameworkMoniker,
@@ -36,8 +37,7 @@ namespace R5T.F0138
                 targetFrameworkMoniker,
                 textOutput);
 
-            // Safe to assume that all XML files in the directory will be documentation files.
-            var documentationFilePaths = Instances.DocumentationXmlFilePathOperator.Get_DocumentationXmlFilePaths_AssumeAllXmls(
+            var documentationFilePaths = this.Get_DocumentationXmlFilePaths(
                 dotnetPackDirectoryPath,
                 textOutput);
 
@@ -45,6 +45,22 @@ namespace R5T.F0138
                 dotnetPackName,
                 targetFrameworkMoniker,
                 documentationFilePaths.Length);
+
+            return documentationFilePaths;
+        }
+
+        /// <summary>
+        /// Assumes all XML files in the dotnet pack directory are documentation files.
+        /// (This is a safe assumption, tested in R5T.S0087.Scripts.Verify_DotnetPackDirectoryXmlFilesAreDocumentationFiles() on 20231026.)
+        /// </summary>
+        public IDocumentationXmlFilePath[] Get_DocumentationXmlFilePaths(
+            IDotnetPackDirectoryPath dotnetPackDirectoryPath,
+            ITextOutput textOutput)
+        {
+            // Safe to assume that all XML files in the directory will be documentation files.
+            var documentationFilePaths = Instances.DocumentationXmlFilePathOperator.Get_DocumentationXmlFilePaths_AssumeAllXmls(
+                dotnetPackDirectoryPath,
+                textOutput);
 
             return documentationFilePaths;
         }
