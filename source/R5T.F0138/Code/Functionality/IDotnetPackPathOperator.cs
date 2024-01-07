@@ -282,10 +282,13 @@ namespace R5T.F0138
                 versionedDirectoryPathsByVersion.Keys,
                 dotnetMajorVersion);
 
-            if(highestSubVersion is null)
+#pragma warning disable IDE0270 // Use coalesce expression
+            // ZOMG! This is the way I want to write code. F-off VS!
+            if (highestSubVersion is null)
             {
                 throw new Exception($"No subversions found for dotnet pack '{dotnetPackName}', major version {dotnetMajorVersion}.");
             }
+#pragma warning restore IDE0270 // Use coalesce expression
 
             var dotnetPackDirectoryPath = this.Get_DotnetPackDirectoryPath(
                 dotnetPackName,
