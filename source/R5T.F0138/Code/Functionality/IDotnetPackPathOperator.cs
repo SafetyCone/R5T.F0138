@@ -83,7 +83,7 @@ namespace R5T.F0138
             T0216.N001.IMajorMinorPatchVersionedDirectoryName majorMinorPatchVersionedDirectoryName,
             ITargetFrameworkDirectoryName targetFrameworkDirectoryName)
         {
-            var output = Instances.PathOperator.GetDirectoryPath(
+            var output = Instances.PathOperator.Get_DirectoryPath(
                 dotnetPacksDirectoryPath.Value,
                 dotnetPackDirectoryName.Value,
                 majorMinorPatchVersionedDirectoryName.Value,
@@ -165,7 +165,7 @@ namespace R5T.F0138
             T0214.N001.IDotnetPacksDirectoryPath dotnetPacksDirectoryPath,
             T0214.N001.IDotnetPackDirectoryName dotnetPackDirectoryName)
         {
-            var output = Instances.PathOperator.GetDirectoryPath(
+            var output = Instances.PathOperator.Get_DirectoryPath(
                 dotnetPacksDirectoryPath.Value,
                 dotnetPackDirectoryName.Value)
                 .ToDotnetPackRootDirectoryPath();
